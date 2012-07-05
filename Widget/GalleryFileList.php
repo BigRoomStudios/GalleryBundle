@@ -73,17 +73,6 @@ class GalleryFileList extends FileList
 		$this->setListFields($list_fields);
 	}
 	
-	private function getFileUploadForm(){
-		
-		$file = new File();
-		
-		$form = $this->createFormBuilder($file)
-			->add('file')
-			->getForm();
-			
-		return $form;
-	}
-	
 	public function uploadAction(){
 			
 		$form = $this->getFileUploadForm();
@@ -128,13 +117,9 @@ class GalleryFileList extends FileList
 	
 	public function getVars($render = true){
 		
-		$form = $this->getFileUploadForm();
-		
 		$upload_url = $this->getActionUrl('upload');
 		
 		$add_vars = array(
-			'form' => $form->createView(),
-			'max_file_size' => (int)ini_get('upload_max_filesize') * 1024 * 1024,
 			'upload_url' => $upload_url,
 		);
 		

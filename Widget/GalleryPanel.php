@@ -43,13 +43,13 @@ class GalleryPanel extends PanelWidget
 		$this->edit_widget = new EditFormWidget();
 		$this->edit_widget->setFields($edit_fields);
 		
-		$this->addListener($this->edit_widget, 'get.id', 'onParentGetById');
-		$this->edit_widget->addListener($this, 'edit.save', 'onEntityUpdate');
-
-		$this->addWidget($this->edit_widget, 'edit_gallery');
-		
 		$this->file_list = new GalleryFileList();
+
+		$this->addWidget($this->edit_widget, 'edit_gallery');		
 		$this->addWidget($this->file_list, 'gallery_images');
+		
+		$this->addListener($this->edit_widget, 'get.id', 'onParentGetById');
+		$this->addListener($this->file_list, 'get.id', 'onSearchEvent');
 		
 		$this->setWidgets(array(
 			'edit_widget' =>& $this->edit_widget,
@@ -57,10 +57,6 @@ class GalleryPanel extends PanelWidget
 		));
 	}
 	
-	public function onEntityUpdate($event){
-		
-		$this->gallery = $event->entity;
-	}
 	
 	public function getById($id){
 		
