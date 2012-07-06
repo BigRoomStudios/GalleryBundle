@@ -64,6 +64,19 @@ class Gallery extends SuperEntity
      * @ORM\Column(name="cover_file_id", type="integer", nullable=true)
      */
     public $cover_file_id;
+	
+	/**
+     * @var integer $display_order
+     *
+     * @ORM\Column(name="display_order", type="integer", nullable=true)
+     */
+    public $display_order;
+	
+	/**
+     * @ORM\OneToMany(targetEntity="GalleryFile", mappedBy="gallery")
+	 * @ORM\OrderBy({"display_order" = "ASC"})
+     */
+    public $files;
 
 
     /**
@@ -194,5 +207,35 @@ class Gallery extends SuperEntity
     public function setCoverFileId($cover_file_id)
     {
         $this->cover_file_id = $cover_file_id;
+    }
+	
+	/**
+     * Get files
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getFiles()
+    {
+        return $this->files;
+    }
+	
+	/**
+     * Get order
+     *
+     * @return int 
+     */
+    public function getDisplayOrder()
+    {
+        return $this->display_order;
+    }
+
+    /**
+     * Set order
+     *
+     * @param int $display_order
+     */
+    public function setDisplayOrder($display_order)
+    {
+        $this->display_order = $display_order;
     }
 }
