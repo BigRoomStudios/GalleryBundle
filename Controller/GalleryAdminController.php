@@ -50,6 +50,7 @@ class GalleryAdminController extends AdminController
 		
 		$list_widget = new ListWidget();
 		$list_widget->setListFields($list_fields);
+		$list_widget->setReorderField('display_order');
 		$this->addWidget($list_widget, 'list_galleries');
 	
 		$new_fields = array(
