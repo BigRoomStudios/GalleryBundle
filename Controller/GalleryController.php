@@ -20,7 +20,7 @@ class GalleryController extends PageController
     {
 		$repo = $this->getRepository('BRSGalleryBundle:Gallery');
 			
-        $galleries = $repo->findAll();
+        $galleries = $repo->findBy(array(),array('display_order' => 'ASC'));
 		
 		$gallery = $galleries[0];
 		
@@ -35,7 +35,7 @@ class GalleryController extends PageController
     {
         $repo = $this->getRepository('BRSGalleryBundle:Gallery');
 			
-        $galleries = $repo->findAll();
+        $galleries = $repo->findBy(array(),array('display_order' => 'ASC'));
 				
 		$gallery = $repo->findOneByRoute($gallery_route);
 		
