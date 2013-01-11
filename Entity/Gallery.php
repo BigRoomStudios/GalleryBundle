@@ -2,7 +2,7 @@
 
 namespace BRS\GalleryBundle\Entity;
 
-use BRS\CoreBundle\Core\SuperEntity;
+use BRS\FileBundle\Core\AttachedFileEntity;
 
 use Doctrine\ORM\Mapping as ORM;
 
@@ -11,9 +11,15 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table()
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
-class Gallery extends SuperEntity
+class Gallery extends AttachedFileEntity
 {
+	/*
+	 * name of root folder that holds all entity sub-folders
+	 */
+    private $root_folder_name = 'Galleries';
+	
     /**
      * @var integer $id
      *
@@ -78,7 +84,9 @@ class Gallery extends SuperEntity
      */
     public $files;
 
-
+	
+	
+	
     /**
      * Get id
      *

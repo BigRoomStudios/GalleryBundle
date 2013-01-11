@@ -13,7 +13,7 @@ class GalleryController extends PageController
 {
 	
 	/**
-     * @Route("/portfolio")
+     * @Route("/gallery")
      * @Template("BRSPageBundle:Page:default.html.twig")
      */
     public function galleryIndexAction()
@@ -28,7 +28,7 @@ class GalleryController extends PageController
 	}
 	
     /**
-     * @Route("/portfolio/{gallery_route}")
+     * @Route("/gallery/{gallery_route}")
      * @Template("BRSPageBundle:Page:default.html.twig")
      */
     public function galleryAction($gallery_route)
@@ -44,7 +44,7 @@ class GalleryController extends PageController
 	
 	public function renderGallery($gallery, $galleries){
 		
-		$route = 'portfolio';
+		$route = 'gallery';
 		
 		$nav = $this->getNav($route);
 				
