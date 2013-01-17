@@ -2,9 +2,11 @@
 
 namespace BRS\GalleryBundle\Entity;
 
-use BRS\FileBundle\Core\AttachedFileEntity;
+use BRS\CoreBundle\Core\SuperEntity;
+use BRS\FileBundle\Entity\File;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * BRS\GalleryBundle\Entity\Gallery
@@ -13,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks()
  */
-class Gallery extends AttachedFileEntity
+class Gallery extends SuperEntity
 {
 	/*
 	 * name of root folder that holds all entity sub-folders
@@ -51,15 +53,21 @@ class Gallery extends AttachedFileEntity
     public $style;
 
     /**
-     * @var datetime $created_time
-     *
-     * @ORM\Column(name="created_time", type="datetime", nullable=true)
+     * @Gedmo\Timestampable(on="create")
+     * @ORM\Column(name="created", type="datetime")
      */
-    public $created_time;
+    private $created;
+
+    /**
+     * @ORM\Column(name="updated", type="datetime")
+     * @Gedmo\Timestampable(on="update")
+     */
+    private $updated;
 
     /**
      * @var string $route
      *
+	 * @Gedmo\Slug(fields={"title"})
      * @ORM\Column(name="route", type="string", length=255, nullable=true)
      */
     public $route;
@@ -78,13 +86,153 @@ class Gallery extends AttachedFileEntity
      */
     public $display_order;
 	
-	/**
-     * @ORM\OneToMany(targetEntity="GalleryFile", mappedBy="gallery")
-	 * @ORM\OrderBy({"display_order" = "ASC"})
-     */
-    public $files;
-
 	
+	/**
+     * @var integer $dir_id
+     *
+     * @ORM\Column(name="dir_id", type="integer", nullable=TRUE)
+     */
+    public $dir_id;
+	
+	/*
+	 * @ORM\OneToOne(targetEntity="BRS\FileBundle\Entity\File", cascade={"all"}, orphanRemoval=true)
+     * @ORM\JoinColumn(name="dir_id", referencedColumnName="id")
+	 */
+	public $directory;
+	
+	
+	/**
+     * Get name of folder to create for this entity  
+     *
+     * @return string
+     */
+	public function getFolderName(){
+		
+		return $this->getTitle();
+	}
+	
+	/**
+	 * @ORM\PreRemove
+	 */
+	public function removeDirectory()
+	{
+		$dir_id = $this->getDirId();
+		
+		if($dir_id){
+		
+			$dir = $this->em->getReference('\BRS\FileBundle\Entity\File', $dir_id);
+			
+			$this->em->remove($dir);
+		}
+	}
+	
+	/**
+	 * @ORM\PostUpdate
+	 */
+	public function updateDirectory()
+	{
+					
+		$dir_id = $this->getDirId();
+		
+		if($dir_id){
+				
+			$dir = $this->em->getReference('\BRS\FileBundle\Entity\File', $dir_id);
+			
+			$folder_name = $this->getFolderName();
+		
+			$dir->setName($folder_name);
+			
+			$this->em->persist($dir);
+			
+			$this->em->flush();
+		}
+	}
+	
+	/**
+	 * @ORM\PrePersist
+	 */
+	public function createDirectory()
+	{	
+		$dir = new File();
+		
+		$parent = $this->em->getRepository('BRSFileBundle:File')->getRootByName($this->root_folder_name);
+		
+		if($parent){
+		
+			$dir->setParent($parent);
+		
+			$dir->setIsDir(true);
+			
+			$folder_name = $this->getFolderName();
+			
+			$dir->setName($folder_name);
+				
+			$this->directory = $dir;
+			
+			$this->em->persist($dir);
+			
+			$this->em->flush();
+			
+			$this->setDirId($dir->id);
+		}
+	}
+	
+	/**
+     * Get driectory
+     *
+     * @return BRS\FileBundle\Entity\File $dir
+     */
+    public function getDirectory()
+    {
+    	$dir_id = $this->getDirId();
+		
+		if($dir_id){
+				
+			$dir = $this->em->getRepository('BRSFileBundle:File')->findOneById($dir_id);
+			
+			return $dir;
+		}
+    }
+	
+	/**
+     * Get files
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+	public function getFiles(){
+		
+		$file_repo = $this->em->getRepository('BRSFileBundle:File');
+		
+		$dir = $this->getDirectory();
+		
+		$files = $file_repo->children($dir, true);
+		
+		return $files;
+	}
+	
+    /**
+     * Set dir_id
+     *
+     * @param integer $dirId
+     */
+    public function setDirId($dirId)
+    {
+        $this->dir_id = $dirId;
+    }
+
+    /**
+     * Get dir_id
+     *
+     * @return integer 
+     */
+    public function getDirId()
+    {
+        return $this->dir_id;
+    }
+    public function __construct()
+    {
+        $this->members = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 	
 	
     /**
@@ -215,16 +363,6 @@ class Gallery extends AttachedFileEntity
     public function setCoverFileId($cover_file_id)
     {
         $this->cover_file_id = $cover_file_id;
-    }
-	
-	/**
-     * Get files
-     *
-     * @return Doctrine\Common\Collections\Collection 
-     */
-    public function getFiles()
-    {
-        return $this->files;
     }
 	
 	/**

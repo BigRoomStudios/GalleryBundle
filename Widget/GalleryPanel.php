@@ -8,7 +8,7 @@ use BRS\CoreBundle\Core\Utility;
 
 use BRS\GalleryBundle\Entity\Gallery;
 use BRS\GalleryBundle\Entity\GalleryFile;
-use BRS\GalleryBundle\Widget\GalleryFileList;
+use BRS\FileBundle\Widget\FileList;
 
 
 /**
@@ -33,17 +33,13 @@ class GalleryPanel extends PanelWidget
 				'type' => 'text',
 				'required' => true,
 			),
-			
-			'route' => array(
-				'type' => 'text',
-				'required' => true,
-			),
 		);
 		
 		$this->edit_widget = new EditFormWidget();
 		$this->edit_widget->setFields($edit_fields);
 		
-		$this->file_list = new GalleryFileList();
+		$this->file_list = new FileList();
+		$this->file_list->setClass('right-widget');
 
 		$this->addWidget($this->edit_widget, 'edit_gallery');		
 		$this->addWidget($this->file_list, 'gallery_images');
@@ -62,21 +58,16 @@ class GalleryPanel extends PanelWidget
 		
 		parent::getById($id);
 		
+		$entity = $this->getRepository()->findOneById($id);
+		
 		$this->sessionSet('gallery_id', $id);
 		
-		$this->file_list->sessionSet('gallery_id', $id);
+		$this->file_list->getById($entity->dir_id);
 		
-		$this->file_list->setFilters(
-			array(
-				array(
-					'filter' => 'g.gallery_id = :id',
-					'params' => array('id' => $id),
-				)
-			)
-		);
+		
 	}
 	
-	
+	/*
 	public function getVars($render = true){
 		
 		$add_vars = array(
@@ -87,6 +78,6 @@ class GalleryPanel extends PanelWidget
 		
 		return $vars;
 	}
-	
+	*/
 		
 }

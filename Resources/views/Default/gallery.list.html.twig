@@ -1,0 +1,5 @@
+<ul>
+	{% for gallery in galleries %}
+		<li><a href="{{ path('brs_gallery_gallery_gallery', {'gallery_route': gallery.route }) }}">{{gallery.title}}</a></li>
+	{% endfor %}
+</ul>

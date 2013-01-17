@@ -13,22 +13,47 @@ class GalleryController extends PageController
 {
 	
 	/**
-     * @Route("/gallery")
+     * @Route("/")
      * @Template("BRSPageBundle:Page:default.html.twig")
      */
     public function galleryIndexAction()
-    {
+    {	
 		$repo = $this->getRepository('BRSGalleryBundle:Gallery');
 			
         $galleries = $repo->findBy(array(),array('display_order' => 'ASC'));
 		
 		$gallery = $galleries[0];
 		
-		return $this->renderGallery($gallery, $galleries);	
+		if($this->isAjax()){
+			
+			$template = $this->getQuery('template');
+			
+			//die('here' . $template);
+			
+			return $this->jsonResponse($this->galleryHelper($gallery, $galleries, $template));
+				
+		}else{
+		
+			return $this->galleryHelper($gallery, $galleries);
+		}
 	}
 	
+	
+	/**
+     * @Route("/list")
+     * @Template("BRSGalleryBundle:Default:gallery.list.html.twig")
+     */
+    public function galleryListAction()
+    {
+        $repo = $this->getRepository('BRSGalleryBundle:Gallery');
+			
+        $galleries = $repo->findBy(array(),array('display_order' => 'ASC'));
+		
+		return array('galleries' => $galleries);
+    }
+	
     /**
-     * @Route("/gallery/{gallery_route}")
+     * @Route("/{gallery_route}")
      * @Template("BRSPageBundle:Page:default.html.twig")
      */
     public function galleryAction($gallery_route)
@@ -39,29 +64,67 @@ class GalleryController extends PageController
 				
 		$gallery = $repo->findOneByRoute($gallery_route);
 		
-		return $this->renderGallery($gallery, $galleries);
+		if($this->isAjax()){
+			
+			$template = $this->getQuery('template');
+			
+			//die('here' . $template);
+			
+			return $this->jsonResponse($this->galleryHelper($gallery, $galleries, $template));
+				
+		}else{
+		
+			return $this->galleryHelper($gallery, $galleries);
+		}
     }
 	
-	public function renderGallery($gallery, $galleries){
-		
-		$route = 'gallery';
-		
-		$nav = $this->getNav($route);
+	/**
+     * Helper for actions that render a gallery view
+     */
+	public function galleryHelper($gallery, $galleries, $template = null){
 				
-		$page = $this->lookupPage($route);
-		
-		if( (!is_object($page)) || (!is_object($gallery)) ){
+		if(!$template){	
 			
-			throw $this->createNotFoundException('This is not the page you\'re looking for...');
+			$path = '';
+			
+			if($_SERVER['PATH_INFO']){
+			
+				$path = explode('/', $_SERVER['PATH_INFO']);
+			
+			}else{
+				
+				$path = explode('/', $_SERVER['SCRIPT_URL']);
+			}
+			
+			$route = $path[1];
+			
+			//die($route);
+			
+			$nav = $this->getNav($route);
+					
+			$page = $this->lookupPage($route);
+			
+			if( (!is_object($page)) || (!is_object($gallery)) ){
+				
+				throw $this->createNotFoundException('This is not the page you\'re looking for...');
+			}
+			
+			$template = $page->template;
 		}
+		
+		$gallery->setEntityManager($this->getEntityManager());
+		
+		$files = $gallery->getFiles();
 		
 		$page_vars = array(
 			'gallery' => $gallery,
-			'galleries' => $galleries
+			'galleries' => $galleries,
+			'files' => $files,
+			'page' => $page,
+			'nav' => $nav,
 		);
 		
-		$rendered = $this->container->get('templating')->render($page->template, $page_vars);
-		
+		$rendered = $this->container->get('templating')->render($template, $page_vars);
 		
 		$vars = array(
 			'route' => $route,
@@ -69,8 +132,11 @@ class GalleryController extends PageController
 			'page' => $page,
 			'nav' => $nav,
 		);
-			
+		
 		return $vars;
 	}
+	
+	
+	
 	
 }
