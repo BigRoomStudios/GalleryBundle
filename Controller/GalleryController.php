@@ -24,17 +24,24 @@ class GalleryController extends PageController
 		
 		$gallery = $galleries[0];
 		
-		if($this->isAjax()){
+		$template = $this->getQuery('template');
+		
+		$helper = $this->galleryHelper($gallery, $galleries, $template);
+		
+		if($this->getQuery('render')){
 			
-			$template = $this->getQuery('template');
+			return $this->response($helper['rendered']);
+		}
+		
+		if($this->isAjax()){
 			
 			//die('here' . $template);
 			
-			return $this->jsonResponse($this->galleryHelper($gallery, $galleries, $template));
+			return $this->jsonResponse($helper);
 				
 		}else{
 		
-			return $this->galleryHelper($gallery, $galleries);
+			return $helper;
 		}
 	}
 	
@@ -82,8 +89,14 @@ class GalleryController extends PageController
      * Helper for actions that render a gallery view
      */
 	public function galleryHelper($gallery, $galleries, $template = null){
-				
-		if(!$template){	
+		
+		$page = null;
+		$nav = null;
+		$route = null;
+		
+		$route = $this->getQuery('route');
+		
+		if(!$template && !$route){	
 			
 			$path = '';
 			
@@ -97,7 +110,10 @@ class GalleryController extends PageController
 			}
 			
 			$route = $path[1];
-			
+		}
+		
+		if($route){
+				
 			//die($route);
 			
 			$nav = $this->getNav($route);
